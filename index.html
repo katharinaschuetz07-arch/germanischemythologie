@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Germanische Mythologie Lern-App | Premium</title>
+<style>
+body{background:black;color:white;font-family:Arial,sans-serif;margin:0;text-align:center;}
+header{padding:10px;border-bottom:2px solid #FF8C00;}
+header h3{margin:2px 0;letter-spacing:1px;}
+header .version{font-size:12px;color:#aaa;}
+.container{padding:10px; max-width: 600px; margin: auto;}
+.menu{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;}
+.button{background:black;color:white;border:2px solid #FF8C00;border-radius:25px;padding:10px;font-size:11px;cursor:pointer;transition:0.3s;font-weight:bold;text-transform:uppercase;}
+.button:hover{background:#FF8C00;color:black;}
+.row{display:flex;gap:8px;margin-top:8px;}
+.row .button{flex:1;}
+.card{border:2px solid #FF8C00;border-radius:20px;padding:20px;min-height:350px;margin-bottom:10px;position:relative;text-align:left;background:#050505;cursor:pointer;user-select:none;transition: background-color 0.3s;}
+.category{position:absolute;top:10px;left:15px;font-size:11px;color:#FF8C00;text-transform:uppercase;font-weight:bold;}
+.king{position:absolute;top:10px;right:15px;font-size:11px;font-style:italic;}
+.title{text-align:center;font-size:22px;margin-top:35px;margin-bottom:10px;min-height:50px;display:flex;align-items:center;justify-content:center;}
+.progress-container {width: 100%; background: #222; height: 4px; border-radius: 2px; margin-bottom: 15px;}
+.progress-bar {width: 0%; height: 100%; background: #FF8C00; border-radius: 2px; transition: width 0.4s ease;}
+.counter{position:absolute;bottom:10px;right:15px;font-size:11px;color:#666;}
+/* Schriftgröße auf 18px gesetzt */
+.content{font-size:18px;line-height:1.6;overflow-y:auto;max-height:220px;padding-right:5px; text-align: center;}
+footer{margin-top:10px;padding:10px;border-top:2px solid #FF8C00;font-size:11px;color:#888;}
+.correct-flash { background-color: #004400 !important; border-color: #00ff00 !important; }
+.wrong-flash { background-color: #440000 !important; border-color: #ff0000 !important; }
+/* Quiz-Optionen zentriert */
+.quiz-option { text-transform: none; font-size: 15px; margin-bottom: 8px; text-align: center; padding-left: 0;}
+</style>
+</head>
+<body>
+
+<header>
+<h3>GERMANISCHE MYTHOLOGIE</h3>
+<div class="version">Version 1.1.7 | Premium Edition</div>
+</header>
+
+<div class="container">
+<div class="menu" id="main-menu">
+<button class="button" onclick="loadCategory('asen')">Asen</button>
+<button class="button" onclick="loadCategory('wanen')">Wanen</button>
+<button class="button" onclick="loadCategory('helden')">Heldensaga</button>
+<button class="button" onclick="loadCategory('wesen')">Fabelwesen</button>
+<button class="button" onclick="loadCategory('welten')">Die 9 Welten</button>
+<button class="button" onclick="loadCategory('geschichte')">Sagenzeit</button>
+</div>
+
+<div class="card" id="card" onclick="nextCard()">
+<div class="category" id="card-category">START</div>
+<div class="king" id="card-king">INFO</div>
+<div class="title" id="card-title">Bereit für Walhall?</div>
+<div class="progress-container" id="progress-cont"><div class="progress-bar" id="progress-bar"></div></div>
+<div class="content" id="card-content">Lerne die Geheimnisse der Runen und Götter kennen. Wähle eine Rubrik.</div>
+<div class="counter" id="card-counter">Start</div>
+</div>
+
+<div class="row">
+<button class="button" onclick="event.stopPropagation(); prevCard()">◀</button>
+<button class="button" onclick="event.stopPropagation(); speak()">🔊</button>
+<button class="button" onclick="event.stopPropagation(); nextCard()">▶</button>
+</div>
+
+<div class="row">
+<button class="button" onclick="goStart()">Menü</button>
+<button class="button" onclick="startQuiz()">Quiz (20)</button>
+<button class="button" onclick="loadCategory('nebenfiguren')">Nebenfiguren</button>
+</div>
+</div>
+
+<footer>&copy; 2026 Germanische Mythologie Lern-App</footer>
+
+<script>
+const data = {
+    asen: [
+        {title:"Odin",king:"Allvater",text:"Höchster Gott, Gott der Weisheit und Runen. Opferte ein Auge am Mimir-Brunnen."},
+        {title:"Thor",king:"Donnergott",text:"Sohn Odins, stärkster Beschützer Midgards. Führt den Hammer Mjölnir."},
+        {title:"Frigg",king:"Göttermutter",text:"Gattin Odins, kennt die Schicksale aller Menschen und Götter."},
+        {title:"Baldur",king:"Lichtgott",text:"Sohn Odins, personifiziert Reinheit und Schönheit. Von Loki heimtückisch getötet."},
+        {title:"Tyr",king:"Gott des Things",text:"Gott für Recht und Krieg. Verlor seine Hand im Maul des Fenriswolfs."},
+        {title:"Loki",king:"Trickster",text:"Gestaltwandler und Blutsbruder Odins. Vater der Hel und des Fenriswolfs."},
+        {title:"Heimdall",king:"Wächter",text:"Bewacht die Brücke Bifröst. Hört das Gras wachsen und sieht 100 Meilen."},
+        {title:"Vidar",king:"Schweigsamer",text:"Sohn Odins. Er rächt seinen Vater bei Ragnarök, indem er Fenris zerreißt."},
+        {title:"Wali",king:"Rächer",text:"Sohn Odins, geboren um den Tod Baldurs an seinem blinden Bruder Hod zu rächen."},
+        {title:"Idun",king:"Jugend",text:"Bewahrt die goldenen Äpfel auf, die den Göttern ihre ewige Jugend schenken."},
+        {title:"Bragi",king:"Dichtergott",text:"Gott der Beredsamkeit und Skaldenkunst. Hat Runen auf seiner Zunge."},
+        {title:"Sif",king:"Thor's Frau",text:"Göttin mit dem goldenen Haar, das von Zwergen geschmiedet wurde."},
+        {title:"Hod",king:"Blinder Gott",text:"Bruder Baldurs. Schoss unwissend den tödlichen Mistelzweig auf Baldur."},
+        {title:"Ullr",king:"Jagdgott",text:"Meister im Skilaufen und Bogenschießen. Wird im Winter oft angerufen."},
+        {title:"Forseti",king:"Richtergott",text:"Sohn Baldurs. Schlichtet alle Streitigkeiten in seiner Halle Glitnir."},
+        {title:"Hermod",king:"Bote",text:"Ritt nach Helheim, um die Freilassung Baldurs von der Totengöttin zu erbitten."},
+        {title:"Magni",king:"Kraft",text:"Sohn Thors. Er rettete seinen Vater, als der Riese Hrungnir auf ihm lag."},
+        {title:"Modi",king:"Zorn",text:"Zusammen mit Magni überlebt er Ragnarök und erbt den Hammer Mjölnir."},
+        {title:"Thrud",king:"Stärke",text:"Tochter Thors und der Sif. Ihr Name bedeutet übersetzt schlicht 'Kraft'."},
+        {title:"Gefjon",king:"Pflug",text:"Göttin des Ackerbaus. Sie verwandelte ihre Söhne in Ochsen und erschuf Seeland."},
+        {title:"Sol",king:"Sonnengöttin",text:"Fährt den Wagen der Sonne über den Himmel, verfolgt vom Wolf Skalli."},
+        {title:"Mani",king:"Mondgott",text:"Bruder der Sol. Er steuert den Mond und wird vom Wolf Hati gejagt."},
+        {title:"Eir",king:"Heilkunde",text:"Die beste Ärztin unter den Göttern. Beschützerin der Heilkunst."},
+        {title:"Saga",king:"Seherin",text:"Trinkt täglich mit Odin aus goldenen Bechern in ihrer Halle Sökkvabekk."},
+        {title:"Fulla",king:"Dienerin",text:"Vertraute der Frigg. Sie trägt das Schmuckkästchen und die Schuhe der Königin."},
+        {title:"Lofn",king:"Liebe",text:"Erwirkt bei Odin und Frigg Erlaubnis für schwer zu schließende Ehen."},
+        {title:"Var",king:"Eide",text:"Göttin, die über die Verträge und Schwüre zwischen Männern und Frauen wacht."},
+        {title:"Syn",king:"Wächterin",text:"Bewacht die Tür zur Halle und schützt gegen Unbefugte beim Thing."},
+        {title:"Snotra",king:"Klugheit",text:"Göttin der Tugend, der guten Sitten und der Selbstbeherrschung."},
+        {title:"Gna",king:"Botin",text:"Reitet auf ihrem Pferd Hofvarpnir durch Luft und über das Wasser für Frigg."}
+    ],
+    wanen: [
+        {title:"Freyr",king:"Fruchtbarkeit",text:"Herr des Friedens und der Ernte. Sein Eber Gullinborsti leuchtet in der Nacht."},
+        {title:"Freya",king:"Liebe",text:"Schönste Göttin. Fährt einen Wagen, der von zwei Waldkatzen gezogen wird."},
+        {title:"Njörd",king:"Meeresgott",text:"Vater von Freyr/Freya. Gott des Windes, des Meeres und des Reichtums."},
+        {title:"Nerthus",king:"Mutter Erde",text:"Uralte Erdgöttin, deren Wagen rituell durch das Land gefahren wurde."},
+        {title:"Kvasir",king:"Weisheit",text:"Geboren aus dem Speichel der Asen und Wanen als Friedenspfand."},
+        {title:"Gullveig",king:"Gier",text:"Wurde dreimal verbrannt und lebte stets weiter. Ursache für den Götterkrieg."},
+        {title:"Skade",king:"Winterriesin",text:"Göttin der Jagd, die Njörd heiratete, da sie seine schönen Füße bewunderte."},
+        {title:"Gerda",king:"Riesin",text:"Die schöne Gattin des Freyr. Er gab sein Schwert auf, um sie zu gewinnen."},
+        {title:"Beyla",king:"Natur",text:"Dienerin des Freyr, zuständig für Landwirtschaft und Bienenzucht."},
+        {title:"Byggvir",king:"Korn",text:"Gatte der Beyla. Er bewacht die Mühle und bereitet den Met für die Götter."},
+        {title:"Hnoss",king:"Kostbarkeit",text:"Tochter der Freya. Sie ist so schön, dass alles Schöne nach ihr benannt ist."},
+        {title:"Gersemi",king:"Kleinod",text:"Zweite Tochter der Freya. Verkörpert den Wert von kostbaren Schätzen."},
+        {title:"Odr",king:"Verschollener",text:"Gatte der Freya. Er verschwand oft auf Reisen, woraufhin Freya goldene Tränen weinte."},
+        {title:"Hadding",king:"Held",text:"Ein sterblicher Held, der oft mit der Sphäre der Wanen in Verbindung gebracht wird."},
+        {title:"Vanaheim",king:"Heimat",text:"Die Heimatwelt der Wanen, bekannt für Fruchtbarkeit und Zauberkraft."},
+        {title:"Friedenspfand",king:"Götterkrieg",text:"Nach dem Krieg tauschten Asen und Wanen Götter aus, um den Frieden zu sichern."},
+        {title:"Seidr",king:"Zauberei",text:"Eine Form der Magie, die Freya den Asen (besonders Odin) beibrachte."},
+        {title:"Folkvang",king:"Volksfeld",text:"Freyas Halle, in der sie die eine Hälfte aller gefallenen Helden empfängt."},
+        {title:"Sessrumnir",king:"Halle",text:"Der Name von Freyas prachtvoller Halle in Folkvang."},
+        {title:"Skidbladnir",king:"Schiff",text:"Das Wunder-Schiff des Freyr, das man zusammenfalten und in die Tasche stecken kann."},
+        {title:"Blutmet",king:"Dichtkunst",text:"Entstand aus dem Blut des Kvasir. Wer davon trinkt, wird zum Dichter."},
+        {title:"Freyas Halsband",king:"Brisingamen",text:"Ein magischer Schmuck, den Freya von vier Zwergen erhielt."},
+        {title:"Gullinborsti",king:"Goldborste",text:"Ein künstlicher Eber des Freyr, der schneller läuft als jedes Pferd."},
+        {title:"Wanenglaube",king:"Ursprung",text:"Die Wanen repräsentieren oft ältere Naturkulte vor der Zeit der kriegerischen Asen."},
+        {title:"Naturopfer",king:"Kult",text:"Wanen wurden oft an Quellen, Mooren und heiligen Hainen verehrt."},
+        {title:"Zwillingskult",king:"Mythos",text:"Freyr und Freya werden oft als heiliges Geschwisterpaar/Zwillingspaar gesehen."},
+        {title:"Noatun",king:"Schiffsplatz",text:"Die am Meer gelegene Halle des Njörd."},
+        {title:"Vana-Krieg",king:"Mythos",text:"Der erste Krieg der Welt, der mit einem Unentschieden und Bündnis endete."},
+        {title:"Fruchtbarkeitssegen",king:"Ritus",text:"Bauern opferten Freyr für gute Ernte und reiches Vieh."},
+        {title:"Bernstein",king:"Tränen",text:"Man sagte, Freyas Tränen wurden im Meer zu kostbarem Bernstein."}
+    ],
+    helden: [
+        {title:"Siegfried",king:"Sigurd",text:"Erschlug den Drachen Fafnir und verstand danach die Sprache der Vögel."},
+        {title:"Beowulf",king:"Geat",text:"Besiegte Grendel und später einen Drachen, um sein Volk zu retten."},
+        {title:"Ragnar Lodbrok",king:"Wiking",text:"Legendärer Anführer, der mit seinen Söhnen ganz Europa in Atem hielt."},
+        {title:"Wieland",king:"Schmied",text:"Gefangener Meisterschmied, der sich zur Flucht künstliche Flügel baute."},
+        {title:"Gunnar",king:"Nibelunge",text:"König der Burgunder, der im Schlangenturm sterben musste."},
+        {title:"Hagen von Tronje",king:"Krieger",text:"Erschlug Siegfried durch einen Speerwurf in dessen einzige verwundbare Stelle."},
+        {title:"Brunhild",king:"Walküre",text:"Eine stolze Königin, die nur den stärksten Helden zum Mann nehmen wollte."},
+        {title:"Kriemhild",king:"Gudrun",text:"Siegfrieds Frau, die nach seinem Tod bittere Rache an ihren Brüdern nahm."},
+        {title:"Völund",king:"König",text:"Ein anderer Name für den Schmied Wieland in der nordischen Überlieferung."},
+        {title:"Egil",king:"Bogenschütze",text:"Wielands Bruder. Er musste einen Apfel vom Kopf seines Sohnes schießen."},
+        {title:"Helgi",king:"Hundingstöter",text:"Ein großer Held der Edda, der von der Walküre Sigrun geliebt wurde."},
+        {title:"Starkad",king:"Krieger",text:"Ein riesenhafter Held, der für seine Treue und seinen Verrat bekannt war."},
+        {title:"Ivar der Knochenlose",king:"Anführer",text:"Sohn Ragnars, bekannt für seinen taktischen Scharfsinn und Härte."},
+        {title:"Björn Eisenseite",king:"Seefahrer",text:"Sohn Ragnars, der bis ins Mittelmeer vordrang und unbesiegbar galt."},
+        {title:"Lagertha",king:"Schildmaid",text:"Eine tapfere Kriegerin und erste Frau von Ragnar Lodbrok."},
+        {title:"Wayland",king:"Mythos",text:"Englische Bezeichnung für den göttlichen Schmied Wieland."},
+        {title:"Sigmund",king:"Völsung",text:"Vater Siegfrieds. Er zog das Schwert Gram aus dem Stamm des Baumes Barnstokk."},
+        {title:"Sinfjötli",king:"Werwolf",text:"Sohn von Sigmund, der zeitweise als Wolf im Wald lebte."},
+        {title:"Fafnir",king:"Drache",text:"Ursprünglich ein Zwerg, der durch Gier zum Lindwurm wurde."},
+        {title:"Regin",king:"Schmied",text:"Bruder Fafnirs, der Siegfried das Schwert Gram neu schmiedete."},
+        {title:"Andvari",king:"Zwerg",text:"Besitzer des verfluchten Goldes, das den Nibelungen zum Verhängnis wurde."},
+        {title:"Gudrun",king:"Heldin",text:"Nordischer Name der Kriemhild, bekannt für ihren unbeugsamen Willen."},
+        {title:"Atli",king:"König",text:"Römisch Attila der Hunne. In der Saga der gierige Ehemann der Gudrun."},
+        {title:"Fjölnir",king:"König",text:"Ein mythischer König Schwedens, der in einem Fass voll Met ertrank."},
+        {title:"Hervör",king:"Schildmaid",text:"Holte das verfluchte Schwert Tyrfing aus dem Grab ihres Vaters."},
+        {title:"Angantyr",king:"Berserker",text:"Besitzer des Schwertes Tyrfing, der im Grab darüber wacht."},
+        {title:"Tyrfing",king:"Schwert",text:"Ein verfluchtes Schwert, das bei jedem Ziehen einen Menschen töten muss."},
+        {title:"Gram",king:"Waffe",text:"Siegfrieds Schwert, das so scharf war, dass es einen Amboss spalten konnte."},
+        {title:"Völsungen",king:"Sippe",text:"Das berühmteste Heldengeschlecht der nordischen Sagenwelt."},
+        {title:"Einherjer",king:"Kämpfer",text:"Die verstorbenen Helden, die in Walhall für Ragnarök trainieren."}
+    ],
+    wesen: [
+        {title:"Fenriswolf",king:"Loki's Kind",text:"Ein Riesenwolf, der die Götter bedroht und Odin verschlingen wird."},
+        {title:"Midgardschlange",king:"Weltenschlange",text:"Umschließt die Welt der Menschen. Ihr Gift wird Thor töten."},
+        {title:"Hel",king:"Totenherrscherin",text:"Halb blau, halb hautfarben. Regiert über die, die den Strohtod starben."},
+        {title:"Sleipnir",king:"Odins Pferd",text:"Ein achtbeiniges Ross, das durch Luft und über das Meer reiten kann."},
+        {title:"Garm",king:"Höllenhund",text:"Bewacht den Eingang zum Totenreich Helheim bei der Gnipa-Höhle."},
+        {title:"Nidhöggr",king:"Drache",text:"Nagt an der tiefsten Wurzel der Weltenesche Yggdrasil."},
+        {title:"Ratatöskr",king:"Eichhörnchen",text:"Überbringt Beleidigungen zwischen dem Adler oben und dem Drachen unten."},
+        {title:"Hugin & Munin",king:"Raben",text:"'Gedanke' und 'Erinnerung'. Sie berichten Odin alles von der Welt."},
+        {title:"Geri & Freki",king:"Wölfe",text:"'Gierig' und 'Gefräßig'. Die treuen Wölfe an Odins Seite."},
+        {title:"Tanngrisnir",king:"Ziegenbock",text:"Einer der beiden Böcke, die Thors Wagen über den Himmel ziehen."},
+        {title:"Jötunn",king:"Riesen",text:"Mächtige Urwesen, oft Feinde der Götter, aber auch deren Vorfahren."},
+        {title:"Alben",king:"Lichtalben",text:"Schöne Geisterwesen, die in Alfheim leben und dem Freyr unterstehen."},
+        {title:"Schwarzalben",king:"Zwerge",text:"Lebten unter der Erde und waren die besten Schmiede der Welten."},
+        {title:"Fylgja",king:"Folgegeist",text:"Ein Schutzgeist in Tiergestalt, der einem Menschen das Leben lang folgt."},
+        {title:"Draugr",king:"Wiedergänger",text:"Untote Krieger, die ihre Grabhügel bewachen und übermenschliche Kraft haben."},
+        {title:"Landvaettir",king:"Landgeister",text:"Schutzgeister eines Ortes, die man nicht durch Drachenköpfe erschrecken durfte."},
+        {title:"Huldra",king:"Waldfee",text:"Wunderschöne Frau mit einem Kuhschwanz, die Männer in den Wald lockt."},
+        {title:"Nornen",king:"Schicksal",text:"Urd, Verdandi und Skuld. Sie bestimmen das Los aller Wesen."},
+        {title:"Walküren",king:"Wählerinnen",text:"Göttliche Frauen, die auf Schlachtfeldern entscheiden, wer nach Walhall darf."},
+        {title:"Ymir",king:"Urriese",text:"Aus seinem Schweiß und Körper entstanden die ersten Riesen und die Welt."},
+        {title:"Audhumla",king:"Urkuh",text:"Nährte Ymir mit ihrer Milch und leckte Buri aus dem Eis."},
+        {title:"Surt",king:"Feuerriese",text:"Bewacht Muspelheim und wird die Welt am Ende mit seinem Flammenschwert verbrennen."},
+        {title:"Hrungnir",king:"Steinriese",text:"Besaß ein Herz und einen Kopf aus Stein. Wurde von Thor besiegt."},
+        {title:"Skrymner",king:"Utgard-Loki",text:"Ein Riese, der Thor mit optischen Täuschungen und Größe hereinlegte."},
+        {title:"Hati",king:"Mondwolf",text:"Verfolgt den Mond am Himmel und wird ihn zu Ragnarök verschlingen."},
+        {title:"Skalli",king:"Sonnenwolf",text:"Verfolgt die Sonne und sorgt dafür, dass sie nie stillsteht."},
+        {title:"Eikthyrnir",king:"Hirsch",text:"Steht auf Walhall und frisst an Yggdrasil. Von seinem Geweih tropft Wasser."},
+        {title:"Heidrun",king:"Ziege",text:"Steht ebenfalls auf Walhall und spendet unendlich viel Met für die Helden."},
+        {title:"Lindwurm",king:"Drache",text:"Flügellose Drachengestalt, oft Symbol für Chaos und Zerstörung."},
+        {title:"Kraken",king:"Seemonster",text:"Riesiges Wesen der Meere, oft mit der Midgardschlange assoziiert."}
+    ],
+    welten: [
+        {title:"Asgard",king:"Götterwelt",text:"Die hochgelegene Burg der Asen, umgeben von einer gewaltigen Mauer."},
+        {title:"Midgard",king:"Menschenwelt",text:"Die mittlere Welt, in der die Sterblichen leben, geschützt durch Zäune."},
+        {title:"Jötunheim",king:"Riesenwelt",text:"Eine wilde Welt aus Eis und Fels, Heimat der Thursen und Jöten."},
+        {title:"Niflheim",king:"Eiswelt",text:"Die Welt des Nebels, der Kälte und des ewigen Eises im Norden."},
+        {title:"Muspelheim",king:"Feuerwelt",text:"Die Welt der Hitze und des Feuers im Süden, regiert von Surt."},
+        {title:"Alfheim",king:"Albenwelt",text:"Lichtdurchflutetes Reich der Elfen, Geschenk der Götter an Freyr."},
+        {title:"Svartalfheim",king:"Zwergenwelt",text:"Unterirdische Gänge und Höhlen, in denen die Zwerge schmieden."},
+        {title:"Vanaheim",king:"Wanenwelt",text:"Fruchtbares Land der Wanengötter jenseits von Asgard."},
+        {title:"Helheim",king:"Totenwelt",text:"Das düstere Reich der Hel für jene, die an Krankheit oder Alter starben."},
+        {title:"Yggdrasil",king:"Weltenbaum",text:"Die gigantische Esche, die alle neun Welten trägt und verbindet."},
+        {title:"Bifröst",king:"Regenbogen",text:"Die brennende Brücke, die Asgard mit Midgard verbindet."},
+        {title:"Walhall",king:"Heldenhalle",text:"Odins prachtvoller Saal mit 540 Toren für die Einherjer."},
+        {title:"Urdbrunnen",king:"Schicksal",text:"Hier beraten die Götter täglich und die Nornen schöpfen Wasser."},
+        {title:"Mimirbrunnen",king:"Weisheit",text:"An einer Wurzel Yggdrasils gelegen. Wer daraus trinkt, sieht alles."},
+        {title:"Hwergelmir",king:"Quelle",text:"Die rauschende Quelle in Niflheim, aus der alle Flüsse entspringen."},
+        {title:"Ginnungagap",king:"Urleere",text:"Der gähnende Abgrund zwischen Feuer und Eis vor der Schöpfung."},
+        {title:"Brimir",king:"Bierhalle",text:"Eine Halle für die Überlebenden nach Ragnarök, in der es reichlich Met gibt."},
+        {title:"Sindri",king:"Goldhalle",text:"Eine strahlende Halle im Gebirge Nida, bestimmt für gute Menschen."},
+        {title:"Naströnd",king:"Leichenstrand",text:"Ort der Qual für Mörder und Eidbrecher in Helheim."},
+        {title:"Hlidskjalf",king:"Thron",text:"Odins Hochsitz, von dem aus er in alle neun Welten blicken kann."},
+        {title:"Glitnir",king:"Glanzhalle",text:"Die Halle des Forseti, mit silbernem Dach und goldenen Säulen."},
+        {title:"Bilskirnir",king:"Blitzhalle",text:"Thors riesige Wohnung in Asgard, das größte Gebäude der Welt."},
+        {title:"Folkvang",king:"Schlachtfeld",text:"Freyas Wohnsitz, wohin die Hälfte der Gefallenen kommt."},
+        {title:"Noatun",king:"Hafen",text:"Njörds Heimstatt am Meer, wo die Möwen schreien."},
+        {title:"Fensal",king:"Sumpfhalle",text:"Der prächtige Palast der Frigg in Asgard."},
+        {title:"Breidablik",king:"Fernstrahl",text:"Die Halle Baldurs, an der nichts Unreines haften kann."},
+        {title:"Sökkvabekk",king:"Senkbach",text:"Sagas Halle, durch die kühle Wellen rauschen."},
+        {title:"Vidi",king:"Waldheim",text:"Das von hohem Gras bewachsene Reich des Vidar."},
+        {title:"Thrymheim",king:"Lärmheim",text:"Die Bergfestung in Jötunheim, die Skade von ihrem Vater erbte."},
+        {title:"Eljudnir",king:"Elend",text:"Die Halle der Hel. Ihre Schwelle heißt 'Fallstrick'."}
+    ],
+    geschichte: [
+        {title:"Schöpfung",king:"Anfang",text:"Odin und seine Brüder erschufen die Welt aus dem Körper des Riesen Ymir."},
+        {title:"Götterkrieg",king:"Konflikt",text:"Der Kampf zwischen Asen und Wanen endete mit einem Austausch von Geiseln."},
+        {title:"Baldurs Tod",king:"Tragödie",text:"Loki brachte den blinden Hod dazu, Baldur mit einem Mistelzweig zu erschießen."},
+        {title:"Thors Hammerraub",king:"Abenteuer",text:"Der Riese Thrym stahl Mjölnir. Thor musste sich als Braut verkleiden, um ihn zurückzuholen."},
+        {title:"Ragnarök",king:"Ende",text:"Die Schicksalsschlacht, in der Götter und Riesen sterben und die Welt versinkt."},
+        {title:"Fimbulwinter",king:"Vorzeichen",text:"Drei harte Winter ohne Sommer, die das Ende der Welt ankündigen."},
+        {title:"Der Mauerbau",king:"Betrug",text:"Ein Riese baute die Mauer Asgards. Loki lockte dessen Pferd weg, um die Bezahlung zu verhindern."},
+        {title:"Runenopfer",king:"Odin",text:"Odin hing neun Tage an Yggdrasil, um das Geheimnis der Runen zu erlangen."},
+        {title:"Dichtermet",king:"Raub",text:"Odin verwandelte sich in eine Schlange und einen Adler, um den Met der Weisheit zu stehlen."},
+        {title:"Lokis Strafe",king:"Fesselung",text:"Loki wurde unter einer Schlange an Felsen gekettet, bis Ragnarök beginnt."},
+        {title:"Gleipnir",king:"Fessel",text:"Zwerge schmiedeten eine Fessel aus Katzengetrippel und Fischatem für Fenris."},
+        {title:"Odins Wanderung",king:"Weg",text:"Odin reiste oft verkleidet als Wanderer durch Midgard, um Menschen zu prüfen."},
+        {title:"Hrungnirs Wette",king:"Rennen",text:"Odin wettete mit dem Riesen um das schnellere Pferd, was zum Streit mit Thor führte."},
+        {title:"Gylfis Täuschung",king:"Wissen",text:"König Gylfi reiste zu den Göttern, um sie über die Welt auszufragen."},
+        {title:"Thors Reise",king:"Utgard",text:"Thor versuchte in der Burg des Utgard-Loki scheinbar unmögliche Aufgaben zu lösen."},
+        {title:"Der Fischzug",king:"Hymir",text:"Thor versuchte die Midgardschlange mit einem Ochsenkopf als Köder zu fangen."},
+        {title:"Völuspa",king:"Prophezeiung",text:"Eine Seherin berichtet Odin vom Anfang und vom Ende der Welt."},
+        {title:"Lokasenna",king:"Zank",text:"Loki beleidigte bei einem Fest alle Götter und deckte ihre Geheimnisse auf."},
+        {title:"Havamal",king:"Lebensregeln",text:"Odins Sprüche über Freundschaft, Klugheit und das richtige Leben."},
+        {title:"Der Ringfluch",king:"Andvari",text:"Ein verfluchter Goldring brachte Gier und Tod über Helden und Götter."},
+        {title:"Wiedergeburt",king:"Hoffnung",text:"Nach Ragnarök steigt eine neue, grüne Erde aus dem Meer auf."},
+        {title:"Lif & Lifthrasir",king:"Überlebende",text:"Zwei Menschen überleben das Weltende im Wald Hoddmimir."},
+        {title:"Gungnirs Schmiede",king:"Waffe",text:"Loki wettete mit Zwergen, was zur Erschaffung von Odins Speer führte."},
+        {title:"Skirnirs Fahrt",king:"Brautwerbung",text:"Freyr schickte seinen Diener nach Jötunheim, um die Riesenbraut Gerd zu gewinnen."},
+        {title:"Heimdalls Kinder",king:"Stände",text:"Als Rigr wanderte Heimdall durch die Welt und begründete die Stände der Menschen."},
+        {title:"Sigurds Tod",king:"Verrat",text:"Durch Intrigen und einen Vergessenstrank wurde der Held Siegfried ermordet."},
+        {title:"Hervörs Erbe",king:"Geister",text:"Eine mutige Frau weckte ihren toten Vater, um das Schwert Tyrfing zu fordern."},
+        {title:"Wielands Rache",king:"Schmied",text:"Der Schmied rächte sich grausam an König Nidud für seine Verstümmelung."},
+        {title:"Die Erschaffung",king:"Ask & Embla",text:"Die ersten Menschen wurden aus zwei Baumstämmen am Strand geformt."},
+        {title:"Das Goldene Zeitalter",king:"Frühe Zeit",text:"Eine Zeit des Friedens am Anfang der Götterwelt, bevor die Gier kam."}
+    ],
+    nebenfiguren: [
+        {title:"Hugin",king:"Rabe",text:"Sein Name bedeutet 'Gedanke'. Er fliegt für Odin über die Welt."},
+        {title:"Munin",king:"Rabe",text:"Sein Name bedeutet 'Erinnerung'. Er sitzt auf Odins Schulter."},
+        {title:"Geri",king:"Wolf",text:"Einer von Odins Wölfen. Er frisst das Fleisch, das Odin ihm reicht."},
+        {title:"Freki",king:"Wolf",text:"Der zweite Wolf Odins. Sein Name bedeutet 'der Gefräßige'."}
+        // ... (Platzhalter für weitere Nebenfiguren bis 30)
+    ]
+};
+
+// Quiz mit 20 Fragen zur germanischen Mythologie
+const quizData = [
+    {q:"Wer ist der Allvater der Götter?",a:["Thor","Odin","Loki"],c:1},
+    {q:"Welche Brücke verbindet Midgard mit Asgard?",a:["Goldbrücke","Bifröst","Regenbogensteg"],c:1},
+    {q:"Wie heißt Thors Hammer?",a:["Gungnir","Mjölnir","Gram"],c:1},
+    {q:"Wer tötete Baldur?",a:["Loki","Fenris","Hod"],c:2},
+    {q:"Welcher Gott verlor seine Hand?",a:["Odin","Tyr","Heimdall"],c:1},
+    {q:"Wie viele Beine hat Sleipnir?",a:["4","6","8"],c:2},
+    {q:"Wie heißen die Schicksalsfrauen?",a:["Walküren","Nornen","Riesen"],c:1},
+    {q:"Wo leben die Menschen?",a:["Asgard","Midgard","Jötunheim"],c:1},
+    {q:"Wer bewacht das Gjallarhorn?",a:["Heimdall","Vidar","Bragi"],c:0},
+    {q:"Was opferte Odin für Weisheit?",a:["Sein Schwert","Seine Hand","Sein Auge"],c:2},
+    {q:"Wer ist die Göttin der Liebe?",a:["Frigg","Sif","Freya"],c:2},
+    {q:"Wie heißt der Weltenbaum?",a:["Yggdrasil","Irminsul","Eiche"],c:0},
+    {q:"Wer frisst Odin bei Ragnarök?",a:["Midgardschlange","Fenriswolf","Surt"],c:1},
+    {q:"Wer ist der Gott des Donners?",a:["Ullr","Thor","Njörd"],c:1},
+    {q:"Aus wem wurde die Welt gebaut?",a:["Ymir","Buri","Ask"],c:0},
+    {q:"Wer ist der Gott der Dichtkunst?",a:["Bragi","Forseti","Wali"],c:0},
+    {q:"Wer leitet die Toten nach Walhall?",a:["Hel","Die Nornen","Die Walküren"],c:2},
+    {q:"Wie heißt die Welt des Feuers?",a:["Niflheim","Muspelheim","Vanaheim"],c:1},
+    {q:"Wer schmiedete Mjölnir?",a:["Zwerge","Riesen","Götter"],c:0},
+    {q:"Was ist Fimbulwinter?",a:["Ein Fest","Ein harter Winter","Ein Gott"],c:1}
+];
+
+let currentCategory='asen', index=0, quizActive=false;
+
+function loadCategory(cat){
+    quizActive=false; 
+    currentCategory=cat; 
+    index=0; 
+    document.getElementById("progress-cont").style.display = "block";
+    showCard();
+}
+
+function showCard(){
+    let item=data[currentCategory][index];
+    document.getElementById("card-category").innerText=currentCategory.toUpperCase();
+    document.getElementById("card-king").innerText=item.king||"";
+    document.getElementById("card-title").innerText=item.title;
+    document.getElementById("card-content").innerHTML=item.text;
+    document.getElementById("card-counter").innerText=(index+1)+" von "+data[currentCategory].length;
+    let percentage = ((index + 1) / data[currentCategory].length) * 100;
+    document.getElementById("progress-bar").style.width = percentage + "%";
+}
+
+function nextCard(){
+    if(quizActive) return; 
+    index++; 
+    if(index>=data[currentCategory].length) index=0; 
+    showCard();
+}
+
+function prevCard(){
+    if(quizActive) return; 
+    index--; 
+    if(index<0) index=data[currentCategory].length-1; 
+    showCard();
+}
+
+function goStart(){
+    quizActive=false;
+    document.getElementById("card-category").innerText="MENÜ";
+    document.getElementById("card-king").innerText="";
+    document.getElementById("card-title").innerText="Kategorie wählen";
+    document.getElementById("card-content").innerText="Wähle eine Rubrik oben oder starte das Quiz.";
+    document.getElementById("card-counter").innerText="Start";
+    document.getElementById("progress-bar").style.width = "0%";
+}
+
+function speak(){
+    let text=document.getElementById("card-title").innerText+". "+document.getElementById("card-content").innerText;
+    let speech=new SpeechSynthesisUtterance(text);
+    speech.lang="de-DE";
+    window.speechSynthesis.speak(speech);
+}
+
+let qIndex=0, correct=0;
+function startQuiz(){
+    quizActive=true; 
+    qIndex=0; 
+    correct=0; 
+    document.getElementById("progress-cont").style.display="none"; 
+    showQuiz();
+}
+
+function showQuiz(){
+    let q=quizData[qIndex];
+    document.getElementById("card-category").innerText="QUIZ";
+    document.getElementById("card-king").innerText="";
+    document.getElementById("card-title").innerText=q.q;
+    let html="";
+    for(let i=0;i<q.a.length;i++) {
+        html+="<button class='button quiz-option' style='width:100%;' onclick='answer("+i+", event)'>"+q.a[i]+"</button>";
+    }
+    document.getElementById("card-content").innerHTML=html;
+    document.getElementById("card-counter").innerText=(qIndex+1)+" von "+quizData.length;
+}
+
+function answer(i, e){
+    e.stopPropagation();
+    let q = quizData[qIndex];
+    let card = document.getElementById("card");
+    if(i === q.c) {
+        correct++; 
+        card.classList.add("correct-flash");
+    } else {
+        card.classList.add("wrong-flash");
+    }
+    setTimeout(() => {
+        card.classList.remove("correct-flash", "wrong-flash");
+        qIndex++;
+        if(qIndex >= quizData.length){
+            document.getElementById("card-title").innerText = "Ergebnis";
+            document.getElementById("card-content").innerHTML = "Du hast " + correct + " von " + quizData.length + " Fragen richtig beantwortet.<br><br>Gute Arbeit, Kenner der Asen!";
+            quizActive = false;
+        } else {
+            showQuiz();
+        }
+    }, 600);
+}
+</script>
+</body>
+</html>
